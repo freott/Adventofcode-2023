@@ -19,7 +19,7 @@ const getSeedsRangesAndMaps = (input) => {
       )
     )
 
-   return [seedsRanges, maps]
+  return [seedsRanges, maps]
 }
 
 const stepBackByRange = (mapRows, ranges) => {
@@ -53,7 +53,7 @@ const stepBackByRange = (mapRows, ranges) => {
 
       const nextRange = (mapEnd + 1) - start
       nextRanges.push([
-        start + targetSourceDiff, 
+        start + targetSourceDiff,
         nextRange
       ])
       start = mapEnd + 1
@@ -70,7 +70,7 @@ const stepBackByRange = (mapRows, ranges) => {
 
 const stepBack = (mapRows, value) => {
   const map = mapRows
-    .find(([target, _, range]) => 
+    .find(([target, _, range]) =>
       value >= target && value < target + range
     )
   if (!map) return value
@@ -84,7 +84,7 @@ const checkForOverlappingRange = (
   seedsRanges
 ) => {
   let nextRanges = [[locationRow[0], locationRow[2]]]
-  reversedSortedMaps.forEach((mapRows, ii ) => {
+  reversedSortedMaps.forEach((mapRows, ii) => {
     nextRanges = stepBackByRange(mapRows, nextRanges)
   })
 
@@ -92,7 +92,7 @@ const checkForOverlappingRange = (
     const finalStart = finalRange[0];
     const finalEnd = finalRange[0] + finalRange[1] - 1;
     return seedsRanges.some(seedRange => {
-      const seedStart = seedRange[0]; 
+      const seedStart = seedRange[0];
       const seedEnd = seedRange[0] + seedRange[1] - 1;
 
       return (seedStart <= finalEnd && seedEnd >= finalStart);
@@ -100,6 +100,29 @@ const checkForOverlappingRange = (
   })
 
   return hasOverlappingRange
+}
+
+function binarySearch(initialLocationRow, verifyLocationRow) {
+  let locationRow = initialLocationRow
+  while (locationRow[2] > 2000) {
+    let [target, source, range] = locationRow
+
+    const leftRange = Math.floor(range / 2);
+    const rightRange = range - leftRange
+
+    const leftLocationRow = [target, source, leftRange];
+    const rightLocationRow = [target + leftRange, source + leftRange, rightRange];
+
+    if (verifyLocationRow(leftLocationRow)) {
+        locationRow = leftLocationRow
+    } else if (verifyLocationRow(rightLocationRow)) {
+        locationRow = rightLocationRow
+    } else {
+        throw Error(`Found no match on left row ${leftLocationRow} or right row ${rightLocationRow}`)
+    }
+  }
+
+  return locationRow
 }
 
 const findLowestLocation = (seedsRanges, maps) => {
@@ -110,45 +133,32 @@ const findLowestLocation = (seedsRanges, maps) => {
   const locationMap = reversedSortedMaps[0]
   const lowestLocation = locationMap[0][0]
   if (lowestLocation !== 0) {
-      locationMap.unshift([0, 0, lowestLocation])
+    locationMap.unshift([0, 0, lowestLocation])
   }
 
-  let lowestLocationNumber
-  for (let locationRow of locationMap) {
-    const hasOverlappingRange = checkForOverlappingRange(
+  const locationRow = locationMap
+    .find(locationRow => checkForOverlappingRange(
       locationRow, reversedSortedMaps, seedsRanges
-    )
-    
-    if (hasOverlappingRange) {
-      let [tar, src, rng] = locationRow
-      let chunkedLocationRows = []
-      while (rng - 10000 > 0) {
-        rng -= 10000
-        chunkedLocationRows.push([tar + rng, src + rng, 10000])
-      }
-      chunkedLocationRows.push([tar, src, rng])
-      chunkedLocationRows = chunkedLocationRows.reverse()
-      
-      for (let chunkedLocationRow of chunkedLocationRows) {
-        const hasOverlappingRange = checkForOverlappingRange(
-          chunkedLocationRow, reversedSortedMaps, seedsRanges
-        )
-        if (hasOverlappingRange) {
-          const [target, source, range] = chunkedLocationRow
-          for (let i = target; i < target + range; i++) {
-            let value = i;
-            for(let mapRows of reversedSortedMaps) {
-              value = stepBack(mapRows, value)
-            }
+    ))
 
-            if (seedsRanges
-                .some(([start, range]) => value >= start && value < start + range)
-             ) {
-              return i
-             }
-          }
-        }
-      }
+  const chunkedLocationRow = binarySearch(
+    locationRow, 
+    (row => checkForOverlappingRange(
+      row, reversedSortedMaps, seedsRanges
+    ))
+  )
+
+  const [target, source, range] = chunkedLocationRow
+  for (let i = target; i < target + range; i++) {
+    let value = i;
+    for (let mapRows of reversedSortedMaps) {
+      value = stepBack(mapRows, value)
+    }
+
+    const matchesASeed = seedsRanges
+      .some(([start, range]) => value >= start && value < start + range)
+    if (matchesASeed) {
+      return i
     }
   }
 }

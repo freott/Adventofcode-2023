@@ -22,9 +22,7 @@ const getRaceRecords = (race) => {
 
 const run = (input) => {
   const race = getRace(input)
-  console.log(race)
   const records = getRaceRecords(race)
-  console.log(records)
   return records.length
 }
 

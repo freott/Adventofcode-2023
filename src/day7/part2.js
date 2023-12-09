@@ -75,7 +75,6 @@ const run = (input) => {
   const hands = getHands(input)
   hands.forEach(gradeHand)
   const sortedHands = hands.sort(sorter)
-  console.log({sortedHands})
   return sortedHands
     .reverse()
     .reduce((acc, hand, i) => acc + hand.bid * (i + 1), 0)
