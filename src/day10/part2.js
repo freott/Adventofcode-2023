@@ -6,10 +6,10 @@ const N = ['|', 'L', 'J', 'S'],
 const getGrid = input => input
   .split("\n")
   .map(rowStr => rowStr.split(""))
-  
+
 const getLoop = grid => {
-  const connectsRight = (x, y) =>  E.includes(grid[y]?.[x])
-  const connectsLeft = (x, y) =>  W.includes(grid[y]?.[x])
+  const connectsRight = (x, y) => E.includes(grid[y]?.[x])
+  const connectsLeft = (x, y) => W.includes(grid[y]?.[x])
   const connectsDown = (x, y) => S.includes(grid[y]?.[x])
   const connectsUp = (x, y) => N.includes(grid[y]?.[x])
 
@@ -24,7 +24,7 @@ const getLoop = grid => {
   let sTile
 
   const path = new Set()
-  grid.some((row, y)=> row.some((cell, x) => {
+  grid.some((row, y) => row.some((cell, x) => {
     if (cell === "S") {
       sCord = `${x},${y}`;
       path.add(sCord)
@@ -59,7 +59,7 @@ const getLoop = grid => {
   while (lookingForS) {
     path.add(currentCords[0])
     if (currentCords.length === 0) process.exit()
-    
+
     let nextCurrentCords = []
     let nextPrevCords = {}
 
@@ -124,7 +124,6 @@ const countOutsiders = (grid, path, sTile) => {
       })
 
       if (crossings % 2 === 1) {
-        console.log('crossing:', x, y, crossings)
         outsiders += 1
       }
     })
@@ -135,20 +134,20 @@ const countOutsiders = (grid, path, sTile) => {
 
 const run = input => {
   const grid = getGrid(input)
-  grid
-  .forEach((row, rowI) => console.log(
-    JSON.stringify(row
-      .map((char, colI) => {
-        if (rowI === 0) return colI
-        if (colI === 0) return rowI
-        return char === "." 
-          ? " " 
-          : char
-      })
-      .map((char, i) => (i > 9 && rowI === 0) ? char : char + " ")
-      .join("")
-    ).replaceAll("\"", "")
-  ))
+  // grid
+  //   .forEach((row, rowI) => console.log(
+  //     JSON.stringify(row
+  //       .map((char, colI) => {
+  //         if (rowI === 0) return colI
+  //         if (colI === 0) return rowI
+  //         return char === "."
+  //           ? " "
+  //           : char
+  //       })
+  //       .map((char, i) => (i > 9 && rowI === 0) ? char : char + " ")
+  //       .join("")
+  //     ).replaceAll("\"", "")
+  //   ))
   const [path, sTile] = getLoop(grid)
 
   return countOutsiders(grid, path, sTile)
